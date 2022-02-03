@@ -8,7 +8,7 @@ Before loading the excel file, the user can specify the total number of harasses
 
 ## Installation
 
-Download the latest version of the application from [GitHub](https://github.com/dominickfau/WireLabelGenerator/releases). Extract the contents of the zip file and run the `Wire Label Generator.exe` file.
+Download the latest version of the application from [GitHub](https://github.com/dominickfau/WireLabelGenerator/releases). Extract the contents of the zip file and run the `Wire Label Generator.exe` file. This application does require the `DYMO Label v.8` application to be installed on the computer. The application will prompt the user to install the application if it is not found.
 
 ## Settings and Configuration
 
@@ -46,3 +46,34 @@ An excel file containing the cut list for a wiring harness must have the followi
 | Cut List   | Right Terminal | String    | The right terminal.                          |
 
 A template for the excel file can be found in the `templates` folder.
+
+## Label Template
+
+Below are all the variables that can be used in the label template.
+
+| Reference Name | Description                                                             |
+| -------------- | ----------------------------------------------------------------------- |
+| timestamp      | The current date and time in the format `MM/DD/YYYY HH:MM`.             |
+| left_text_box  | The left text box. This is where the left text will be printed.         |
+| right_text_box | The right text box. This is where the right text will be printed.       |
+| barcode        | A QR code containing a json string as defined in the `Barcode` section. |
+
+## Barcode
+
+Below is a sample of what the barcode json string will look like.
+
+```json
+{
+  "Timestamp": "02-03-2022 13:01",
+  "Cut By": {
+    "first_name": "Test",
+    "last_name": "User"
+  },
+  "Customer": "Test Customer",
+  "PN": "PN-12345",
+  "Wire": "16GA BLUE/BLACK GPT",
+  "Length": "46",
+  "Left Term": "SPLICE",
+  "Right Term": "14/16 AMPHENOL SOCKET"
+}
+```

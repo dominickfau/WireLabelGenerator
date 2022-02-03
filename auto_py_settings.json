@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "C:/Users/Nick Gamming/Documents/Python/QES_WireLabelGenerator/app.py"
+   "value": "C:/Users/Nick Gamming/Documents/Python/WireLabelGenerator/app.py"
   },
   {
    "optionDest": "onefile",
@@ -67,7 +67,7 @@
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Nick Gamming/Documents/Python/QES_WireLabelGenerator/templates;templates/"
+   "value": "C:/Users/Nick Gamming/Documents/Python/WireLabelGenerator/templates;templates/"
   },
   {
    "optionDest": "binaries",

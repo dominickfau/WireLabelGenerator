@@ -27,17 +27,17 @@ An excel file containing the cut list for a wiring harness must have the followi
 
 | Sheet Name | Column Name    | Data Type | Description                                  |
 | ---------- | -------------- | --------- | -------------------------------------------- |
-| Cut List   | Qty            | Integer   | The number of pieces required for this wire. |
-| Cut List   | Gauge          | Integer   | The gauge of the wire.                       |
-| Cut List   | Type           | String    | The type of wire. IE. GPT, GXL, etc          |
-| Cut List   | Color          | String    | The color of the wire.                       |
-| Cut List   | Length         | Integer   | The length of the wire in inches.            |
-| Cut List   | Left Strip     | Float     | The length of the left strip in inches.      |
-| Cut List   | Left Gap       | Float     | The length of the left gap in inches.        |
-| Cut List   | Right Gap      | Float     | The length of the right gap in inches.       |
-| Cut List   | Right Strip    | Float     | The length of the right strip in inches.     |
-| Cut List   | Left Terminal  | String    | The left terminal.                           |
-| Cut List   | Right Terminal | String    | The right terminal.                          |
+| Cut Sheet  | Qty            | Integer   | The number of pieces required for this wire. |
+| Cut Sheet  | Gauge          | Integer   | The gauge of the wire.                       |
+| Cut Sheet  | Type           | String    | The type of wire. IE. GPT, GXL, etc          |
+| Cut Sheet  | Color          | String    | The color of the wire.                       |
+| Cut Sheet  | Length         | Integer   | The length of the wire in inches.            |
+| Cut Sheet  | Left Strip     | Float     | The length of the left strip in inches.      |
+| Cut Sheet  | Left Gap       | Float     | The length of the left gap in inches.        |
+| Cut Sheet  | Right Gap      | Float     | The length of the right gap in inches.       |
+| Cut Sheet  | Right Strip    | Float     | The length of the right strip in inches.     |
+| Cut Sheet  | Left Terminal  | String    | The left terminal.                           |
+| Cut Sheet  | Right Terminal | String    | The right terminal.                          |
 
 A template for the excel file can be found in the `templates` folder.
 

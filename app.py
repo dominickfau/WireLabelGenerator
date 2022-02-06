@@ -9,7 +9,6 @@ import pandas
 import datetime
 import json
 from logging.config import dictConfig
-from win32com.client import Dispatch
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -19,14 +18,9 @@ from mainwindow import Ui_MainWindow
 from excelparser import parse_excel
 from label import Label
 from printer import DymoLabelPrinter
+from settings import *
+import database
 
-
-COMPANY_NAME = "DF-Software"
-PROGRAM_NAME = "Wire Cutting Label Generator"
-VERSION = "1.0.2"
-USER_HOME_FOLDER = os.path.expanduser("~")
-COMPANY_FOLDER = os.path.join(USER_HOME_FOLDER, "Documents", COMPANY_NAME)
-PROGRAM_FOLDER = os.path.join(COMPANY_FOLDER, PROGRAM_NAME)
 
 COLUMNS = [
     "Line",
@@ -44,12 +38,10 @@ COLUMNS = [
     "Right Terminal",
 ]
 
-DATE_TIME_FORMAT = "%m-%d-%Y %H:%M"
-
 settings = QtCore.QSettings(COMPANY_NAME, PROGRAM_NAME)
 
 # Default log settings
-LOG_FOLDER = os.path.join(PROGRAM_FOLDER, "Logs")
+
 MAX_LOG_SIZE_MB = (
     DefaultSetting(
         settings=settings, group_name="Logging", name="max_log_size_mb", value=5
@@ -71,8 +63,7 @@ LOG_LEVEL = (
     .initialize_setting()
     .value
 )
-FRONT_END_LOG_FILE = "frontend.log"
-BACK_END_LOG_FILE = "backend.log"
+
 
 # Default program settings
 MAX_LABEL_COUNT = (
@@ -116,16 +107,6 @@ if DISSABLE_LABEL_PRINTING == "true":
     DISSABLE_LABEL_PRINTING = True
 else:
     DISSABLE_LABEL_PRINTING = False
-
-
-if not os.path.exists(COMPANY_FOLDER):
-    os.makedirs(COMPANY_FOLDER)
-
-if not os.path.exists(PROGRAM_FOLDER):
-    os.makedirs(PROGRAM_FOLDER)
-
-if not os.path.exists(LOG_FOLDER):
-    os.makedirs(LOG_FOLDER)
 
 
 if DEBUG:
@@ -296,6 +277,13 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.user = None  # type: User
         self.previous_label = None  # type: Label
         self.customer_name = ""
+        self.part_number = ""
+
+        self.engine = database.create_engine(f"sqlite:///{DATABASE_FILE}")
+        database.create_tables(self.engine)
+
+        self.SessionMaker = database.sessionmaker(bind=self.engine)
+        database.create_test_data(self.SessionMaker)
 
         dialog = UserDialog()
         dialog.exec()
@@ -353,9 +341,9 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.selected_printer_combobox.addItems(self.printer.PRINTERS)
         self.batch_size_spinbox.setMaximum(self.total_cut_qty_spinbox.value())
 
-        self.setWindowTitle(f"{PROGRAM_NAME} v{VERSION}")
+        self.setWindowTitle(f"{PROGRAM_NAME} v{PROGRAM_VERSION}")
         if DEBUG:
-            self.setWindowTitle(f"{PROGRAM_NAME} v{VERSION} - DEBUG MODE")
+            self.setWindowTitle(f"{PROGRAM_NAME} v{PROGRAM_VERSION} - DEBUG MODE")
         self.connect_signals()
 
         # Restore program settings
@@ -418,6 +406,8 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             dialog.exec()
             self.customer_name = dialog.customer_name
 
+        self.part_number = get_part_number(file_path)
+
         self.cut_sheet_file_path_lineedit.setText(file_path)
         self.reload_table()
         self.print_selected_pushbutton.setEnabled(True)
@@ -462,7 +452,7 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.print(data)
 
     def print(self, data: dict):
-        part_number = get_part_number(self.cut_sheet_file_path_lineedit.text())
+        part_number = self.part_number
         for row in data:
             copies = int(row["Bundles"])
             timestamp = datetime.datetime.now().strftime(DATE_TIME_FORMAT)
@@ -551,23 +541,46 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             batch_size = self.batch_size_spinbox.value()
             bundles = math.ceil(total_qty / batch_size) * int(row["Qty"])
 
-            self.tablewidget.insert_row_data(
-                [
-                    str(row_index + 1),
-                    str(bundles),
-                    str(int(row["Qty"])),
-                    str(int(row["Gauge"])),
-                    str(row["Type"]),
-                    str(row["Color"]),
-                    str(row["Length"]),
-                    str(row["Left Strip"]),
-                    str(row["Left Gap"]),
-                    str(row["Right Strip"]),
-                    str(row["Right Gap"]),
-                    str(row["Left Terminal"]),
-                    str(row["Right Terminal"]),
-                ]
-            )
+            data = [
+                str(row_index + 1),
+                str(bundles),
+                str(int(row["Qty"])),
+                str(int(row["Gauge"])),
+                str(row["Type"]),
+                str(row["Color"]),
+                str(row["Length"]),
+                str(row["Left Strip"]),
+                str(row["Left Gap"]),
+                str(row["Right Strip"]),
+                str(row["Right Gap"]),
+                str(row["Left Terminal"]),
+                str(row["Right Terminal"]),
+            ]
+
+            self.tablewidget.insert_row_data(data)
+
+            data = {
+                "Qty": str(int(row["Qty"])),
+                "Gauge": str(int(row["Gauge"])),
+                "Type": str(row["Type"]),
+                "Color": str(row["Color"]),
+                "Length": str(row["Length"]).replace('"', ""),
+                "Left Strip": str(row["Left Strip"]),
+                "Left Gap": str(row["Left Gap"]),
+                "Right Strip": str(row["Right Strip"]),
+                "Right Gap": str(row["Right Gap"]),
+                "Left Terminal": str(row["Left Terminal"]),
+                "Right Terminal": str(row["Right Terminal"]),
+            }
+
+            if data["Qty"] != "nan" and data["Gauge"] != "nan":
+                database.process_cut_sheet_row(
+                    self.SessionMaker,
+                    data,
+                    customer_name=self.customer_name,
+                    part_number=self.part_number,
+                    user=self.user,
+                )
 
         self.tablewidget.resizeColumnsToContents()
         self.print_previous_pushbutton.setEnabled(False)
@@ -583,7 +596,7 @@ def main():
 
 if __name__ == "__main__":
     root_logger.info("=" * 80)
-    root_logger.info(f"Starting application... Version: {VERSION}")
+    root_logger.info(f"Starting application... PROGRAM_VERSION: {PROGRAM_VERSION}")
 
     if DEBUG:
         root_logger.debug("Debug mode enabled.")
@@ -593,7 +606,7 @@ if __name__ == "__main__":
             "Label printing is disabled. Labels will not be printed. However, each label will be logged."
         )
 
-    # Log the os platform, version and architecture
+    # Log the os platform, PROGRAM_VERSION and architecture
     bits, linkage = platform.architecture()
     root_logger.info(
         f'{platform.system()} OS detected. Version: "{platform.version()}" Architecture: [Bits: "{bits}", Linkage: "{linkage}"]'

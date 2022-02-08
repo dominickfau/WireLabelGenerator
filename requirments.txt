@@ -4,3 +4,4 @@ openpyxl
 pyqt5
 pywin32
 auto-py-to-exe
+requests

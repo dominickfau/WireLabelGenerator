@@ -9,7 +9,6 @@ import pandas
 import datetime
 import json
 from logging.config import dictConfig
-from win32com.client import Dispatch
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -19,14 +18,9 @@ from mainwindow import Ui_MainWindow
 from excelparser import parse_excel
 from label import Label
 from printer import DymoLabelPrinter
+from settings import *
+from update import check_for_updates
 
-
-COMPANY_NAME = "DF-Software"
-PROGRAM_NAME = "Wire Cutting Label Generator"
-VERSION = "1.0.2"
-USER_HOME_FOLDER = os.path.expanduser("~")
-COMPANY_FOLDER = os.path.join(USER_HOME_FOLDER, "Documents", COMPANY_NAME)
-PROGRAM_FOLDER = os.path.join(COMPANY_FOLDER, PROGRAM_NAME)
 
 COLUMNS = [
     "Line",
@@ -44,12 +38,11 @@ COLUMNS = [
     "Right Terminal",
 ]
 
-DATE_TIME_FORMAT = "%m-%d-%Y %H:%M"
 
 settings = QtCore.QSettings(COMPANY_NAME, PROGRAM_NAME)
 
 # Default log settings
-LOG_FOLDER = os.path.join(PROGRAM_FOLDER, "Logs")
+
 MAX_LOG_SIZE_MB = (
     DefaultSetting(
         settings=settings, group_name="Logging", name="max_log_size_mb", value=5
@@ -71,8 +64,7 @@ LOG_LEVEL = (
     .initialize_setting()
     .value
 )
-FRONT_END_LOG_FILE = "frontend.log"
-BACK_END_LOG_FILE = "backend.log"
+
 
 # Default program settings
 MAX_LABEL_COUNT = (
@@ -116,16 +108,6 @@ if DISSABLE_LABEL_PRINTING == "true":
     DISSABLE_LABEL_PRINTING = True
 else:
     DISSABLE_LABEL_PRINTING = False
-
-
-if not os.path.exists(COMPANY_FOLDER):
-    os.makedirs(COMPANY_FOLDER)
-
-if not os.path.exists(PROGRAM_FOLDER):
-    os.makedirs(PROGRAM_FOLDER)
-
-if not os.path.exists(LOG_FOLDER):
-    os.makedirs(LOG_FOLDER)
 
 
 if DEBUG:
@@ -578,6 +560,7 @@ def main():
     app = QtWidgets.QApplication([])
     window = MainWindow()
     window.show()
+    check_for_updates()
     app.exec_()
 
 
@@ -604,4 +587,10 @@ if __name__ == "__main__":
     except Exception as error:
         root_logger.error("Application failed to start.")
         root_logger.exception(f"Exception: {error}")
+        dialog = QtWidgets.QMessageBox()
+        dialog.setWindowTitle("Fatale Error")
+        dialog.setIcon(QtWidgets.QMessageBox.Critical)
+        dialog.setText(f"Application failed to start.")
+        dialog.setDetailedText(f"Exception: {error}")
+        dialog.exec_()
         raise error

@@ -4,7 +4,7 @@ from utilities import Version
 
 COMPANY_NAME = "DF-Software"
 PROGRAM_NAME = "Wire Cutting Label Generator"
-VERSION = Version(major=1, minor=0, patch=2)
+VERSION = Version(major=1, minor=0, patch=3)
 USER_HOME_FOLDER = os.path.expanduser("~")
 COMPANY_FOLDER = os.path.join(USER_HOME_FOLDER, "Documents", COMPANY_NAME)
 PROGRAM_FOLDER = os.path.join(COMPANY_FOLDER, PROGRAM_NAME)

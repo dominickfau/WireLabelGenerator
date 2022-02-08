@@ -1,4 +1,5 @@
 from __future__ import annotations
+from asyncio import protocols
 from typing import Any
 from dataclasses import dataclass
 from PyQt5.QtCore import QSettings
@@ -29,6 +30,43 @@ class DefaultSetting:
             self.value = self.settings.value(self.name)
         self.settings.endGroup()
         return self
+
+
+@dataclass
+class Version:
+    """Class to hold the version information."""
+
+    major: int
+    minor: int
+    patch: int
+
+    def __str__(self) -> str:
+        return f"{self.major}.{self.minor}.{self.patch}"
+
+    @property
+    def total(self) -> int:
+        return self.major + self.minor + self.patch
+
+    def __eq__(self, __o: Version) -> bool:
+        return self.total == __o.total
+
+    def __lt__(self, __o: Version) -> bool:
+        return self.total < __o.total
+
+    def __gt__(self, __o: Version) -> bool:
+        return self.total > __o.total
+
+    def __le__(self, __o: Version) -> bool:
+        return self.total <= __o.total
+
+    def __ge__(self, __o: Version) -> bool:
+        return self.total >= __o.total
+
+    @staticmethod
+    def from_string(version: str) -> Version:
+        """Method to create a version object from a string."""
+        major, minor, patch = parse_version(version)
+        return Version(int(major), int(minor), int(patch))
 
 
 @dataclass
@@ -67,3 +105,17 @@ def get_part_number(file_path: str) -> str:
 def get_customer_name(file_path: str) -> str:
     """Get the customer name."""
     return get_file_name(file_path).split(" ")[1]
+
+
+def parse_version(version: str) -> tuple[int, int, int]:
+    """Parse the version string.
+
+    Args:
+        version (str): The version string to parse.
+
+    Returns:
+        tuple[int, int, int]: Returns the major, minor, patch for the version.
+    """
+    version = version.replace("v", "")
+    major, minor, patch = version.split(".")
+    return major, minor, patch

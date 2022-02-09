@@ -1,5 +1,6 @@
 import os
 from utilities import Version
+from excelparser import RequiredSheet
 
 
 COMPANY_NAME = "DF-Software"
@@ -25,6 +26,29 @@ GITHUB_REPO_NAME = "WireLabelGenerator"
 GITHUB_LATEST_RELEASE_ENDPOINT = (
     f"https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO_NAME}/releases/latest"
 )
+
+
+# Excel
+CUT_SHEET_NAME = "Cut Sheet"
+
+REQUIRED_SHEETS = [
+    RequiredSheet(
+        name=CUT_SHEET_NAME,
+        columns=[
+            "Qty",
+            "Gauge",
+            "Type",
+            "Color",
+            "Length",
+            "Left Strip",
+            "Left Gap",
+            "Right Strip",
+            "Right Gap",
+            "Left Terminal",
+            "Right Terminal",
+        ],
+    ),
+]
 
 
 if not os.path.exists(COMPANY_FOLDER):

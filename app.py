@@ -15,28 +15,19 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from utilities import *
 from errors import *
 from mainwindow import Ui_MainWindow
-from excelparser import parse_excel
+from excelparser import parse_excel, REQUIRED_SHEETS, CUT_SHEET_NAME
 from label import Label
 from printer import DymoLabelPrinter
 from settings import *
 from update import check_for_updates
 
 
-COLUMNS = [
-    "Line",
-    "Bundles",
-    "Qty",
-    "Gauge",
-    "Type",
-    "Color",
-    "Length",
-    "Left Strip",
-    "Left Gap",
-    "Right Strip",
-    "Right Gap",
-    "Left Terminal",
-    "Right Terminal",
-]
+COLUMNS = ["Line", "Bundles"]
+for required_sheet in REQUIRED_SHEETS:
+    if required_sheet.name != CUT_SHEET_NAME:
+        continue
+    for column in required_sheet.columns:
+        COLUMNS.append(column)
 
 
 settings = QtCore.QSettings(COMPANY_NAME, PROGRAM_NAME)
@@ -588,7 +579,7 @@ if __name__ == "__main__":
         root_logger.error("Application failed to start.")
         root_logger.exception(f"Exception: {error}")
         dialog = QtWidgets.QMessageBox()
-        dialog.setWindowTitle("Fatale Error")
+        dialog.setWindowTitle("Fatal Error")
         dialog.setIcon(QtWidgets.QMessageBox.Critical)
         dialog.setText(f"Application failed to start.")
         dialog.setDetailedText(f"Exception: {error}")

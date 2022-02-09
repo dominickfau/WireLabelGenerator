@@ -431,7 +431,8 @@ class MainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
                 row_data[column_heder] = row_items[row * column_count + column].text()
             to_remove.append(row_items[row * column_count + column].row())
             data.append(row_data)
-
+            
+        row["Bundles"] = 1
         self.print(data)
 
     def print(self, data: dict):
